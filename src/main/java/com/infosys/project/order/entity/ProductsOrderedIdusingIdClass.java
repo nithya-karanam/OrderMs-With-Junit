@@ -6,8 +6,7 @@ import javax.annotation.sql.DataSourceDefinition;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+
 
 @Embeddable
 public class ProductsOrderedIdusingIdClass implements Serializable {

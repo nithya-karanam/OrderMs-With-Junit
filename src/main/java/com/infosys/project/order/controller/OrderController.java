@@ -178,5 +178,17 @@ public String changeOrderStatus(@PathVariable Integer orderid,@PathVariable Stri
 		
 	}
 
-	
+	@GetMapping(value = "/api/deliveryAddressbuyer/{buyerId}",  produces = MediaType.APPLICATION_JSON_VALUE)
+	public boolean privilegedBuyer(@PathVariable Integer buyerId) {
+		boolean flag = orderService.checkDeliveryAddress(buyerId);
+		return flag;
+	}
+	@DeleteMapping(value="/order/cancel/{orderid}")
+	public String  cancelOrder(@PathVariable int orderid){
+		return orderService.cancelOrder(orderid);
+	}
+	@GetMapping(value="/orders/{orderid}")
+	public OrderDTO getOrderbyOrderid(@PathVariable int orderid) {
+		return orderService.getSpecificOrder(orderid);
+	}
 }

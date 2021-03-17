@@ -231,6 +231,25 @@ public void changeAmountAccordingToRewardPoints(int buyerId,double amount) {
 	}
 
 }
+public boolean checkDeliveryAddress(int buyerId) {
+	Optional<OrderDetails> optOrder = orderRepo.findByBuyerid(buyerId);
+	if(optOrder.isPresent()) {
+		OrderDetails order = optOrder.get();
+	    if(order.getAddress().length()<100) {
+	    	return true;
+	    }
+	    
+	}
+	return false;
+}
+public String cancelOrder(int orderid) {
+	  Optional<OrderDetails> order=orderRepo.findById(orderid);
+	  if(order.isPresent()) {
+		  OrderDetails order1=order.get();
+	  orderRepo.delete(order1);
+	  return "DELETED Successfully!!!!!";
+	  }
 
-
+return "Sorry!!Your order cannot be deleted";
+}
 }
