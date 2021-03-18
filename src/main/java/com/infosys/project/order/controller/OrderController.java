@@ -71,7 +71,7 @@ public class OrderController {
 	}
 	
 	@GetMapping(value = "/orders",  produces = MediaType.APPLICATION_JSON_VALUE)
-	public List<OrderDTO> getAllOrderDetails() {
+	public List<CombinedDTO> getAllOrderDetails() {
 		logger.info("Orderdetails");
 
 		return orderService.getOrderDetails();
@@ -95,7 +95,7 @@ public class OrderController {
 		RestTemplate restTemp=new RestTemplate();
 		//Fetching cartdetails using kafka
 		CartDTO cartDto=orderService.getCart();
-	System.out.println("1");
+	    System.out.println("1");
 		//To fetch productdetails from ProductMs
 		String urlprod=producturl+"/products";
 		String prodDto=restTemp.getForObject(urlprod, String.class);
@@ -106,15 +106,14 @@ public class OrderController {
 		String checkstockurl=producturl+"/order/checkstock/"+cartDto.getProdId()+"/"+cartDto.getQuantity();
 		restTemp.getForObject(checkstockurl, String.class);
 		System.out.println("3");
-//       // Updating the database		
+      // Updating the database		
 		orderService.toDatabase(placeorderDTO, cartDto, prodDtolist, totalamount);	
-		//delete product from cart
-		//String updatestockurl=producturl+"order/update/";	
+
 		Map<String, String> params = new HashMap<String, String>();
-       params.put("prodid", String.valueOf(cartDto.getProdId()));
+        params.put("prodid", String.valueOf(cartDto.getProdId()));
 
 		restTemp.put(producturl+"order/update/"+cartDto.getProdId(),cartDto.getQuantity(),params);
-	System.out.println("3");
+    	System.out.println("3");
 	//to delete 
           delete(cartDto.getBuyerId(),cartDto.getProdId());
 	
@@ -136,7 +135,7 @@ public class OrderController {
 	public ResponseEntity<String> reOrder(@PathVariable Integer orderId,@PathVariable Integer prodId) throws Exception {
          ResponseEntity<String> response=null;
        try {
-		orderService.reOrder(orderId, prodId);
+		 orderService.reOrder(orderId, prodId);
 		 String successMessage = environment.getProperty("REORDER_PLACED_SUCCESSFULLY");
 		 response = new ResponseEntity<String>(successMessage,HttpStatus.CREATED);
 			 
@@ -147,15 +146,17 @@ public class OrderController {
 	return response;
 		
 	}
+	//To get list of products ordered by seller id
 	@GetMapping("/order/product/{sellerid}")
 	public List<ProductsOrderedDTO> getproductsnySellerId(@PathVariable int sellerid){
 		return orderService.productsordered(sellerid);
 	}
 	//To change the status of the order
 	@PutMapping("order/{orderid}/{status}")
-public String changeOrderStatus(@PathVariable Integer orderid,@PathVariable String status) {
+    public String changeOrderStatus(@PathVariable Integer orderid,@PathVariable String status) {
 		return orderService.changeOrderStatus(orderid, status);
 	}
+	//to check kafka cartdto
 	@GetMapping(value="/kafka")
 	public CartDTO kafka(){
 		return orderService.getCart();
@@ -183,12 +184,14 @@ public String changeOrderStatus(@PathVariable Integer orderid,@PathVariable Stri
 		boolean flag = orderService.checkDeliveryAddress(buyerId);
 		return flag;
 	}
+	//to cancel the order
 	@DeleteMapping(value="/order/cancel/{orderid}")
 	public String  cancelOrder(@PathVariable int orderid){
 		return orderService.cancelOrder(orderid);
 	}
+	//to get order by orderid
 	@GetMapping(value="/orders/{orderid}")
-	public OrderDTO getOrderbyOrderid(@PathVariable int orderid) {
+	public CombinedDTO getOrderbyOrderid(@PathVariable int orderid) {
 		return orderService.getSpecificOrder(orderid);
 	}
 }

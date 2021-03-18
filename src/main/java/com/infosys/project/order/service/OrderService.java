@@ -37,17 +37,25 @@ public class OrderService {
 	@Autowired
 	KafkaConsumer kafka;
 	
-	public List<OrderDTO> getOrderDetails() {
-
+	public List<CombinedDTO> getOrderDetails() {
+        List<CombinedDTO> cmds=new ArrayList();
 		List<OrderDetails> orders = orderRepo.findAll();
 		List<OrderDTO> orderDTOs = new ArrayList<>();
+		CombinedDTO newDTO=null;
 
 		for (OrderDetails order:orders) {
-			OrderDTO orderDTO = OrderDTO.valueOf(order);
-			orderDTOs.add(orderDTO);
+			newDTO=CombinedDTO.valueOf(order);
+			List<ProductsOrdered> prodorders=productRepo.findByorderid(newDTO.getOrderid());
+			List<ProductsOrderedDTO> prodList=new ArrayList<>();
+			for(ProductsOrdered p:prodorders) {
+				ProductsOrderedDTO pdto=ProductsOrderedDTO.valueOf(p);
+				prodList.add(pdto);
+			}
+			newDTO.setProductsOrdered(prodList);
+			cmds.add(newDTO);
 		}
-		logger.info("Order details : {}", orderDTOs);
-		return orderDTOs;
+		
+		return cmds;
 	}
 	
 	
@@ -77,18 +85,24 @@ public class OrderService {
 		return prodlist;
 	}
 	
-	public OrderDTO getSpecificOrder(int orderid) {
-		logger.info("Order details : {}", orderid);
-		OrderDTO orderDTO=null;
+	public CombinedDTO getSpecificOrder(int orderid) {
+		CombinedDTO newDTO=null;
 		Optional<OrderDetails> optOrder=orderRepo.findById(orderid);
 		if(optOrder.isPresent()) {
 			OrderDetails orderDetails=optOrder.get();
-	        orderDTO=OrderDTO.valueOf(orderDetails);
+			newDTO=CombinedDTO.valueOf(orderDetails);
+			List<ProductsOrdered> prodorders=productRepo.findByorderid(newDTO.getOrderid());
+		List<ProductsOrderedDTO> prodList=new ArrayList<>();
+		for(ProductsOrdered p:prodorders) {
+			ProductsOrderedDTO pdto=ProductsOrderedDTO.valueOf(p);
+			prodList.add(pdto);
 		}
-		return orderDTO;
+		newDTO.setProductsOrdered(prodList);
+		}
+		return newDTO;
 	}
    public Double placeOrder(CartDTO cd,List<ProductsDTO> prodlist) {
-	double cost=0.0;
+	    double cost=0.0;
 		for(ProductsDTO pd:prodlist) {
 			  if(cd.getProdId().equals(pd.getProdid())) {
 				    cost+=cd.getQuantity()*pd.getPrice();
@@ -198,11 +212,11 @@ public class OrderService {
     }
    
     
-public String changeOrderStatus(Integer orderid,String status){
-	String orderstatus=null;
-	 List<OrderDetails> entities=orderRepo.findAll();
-	 for(OrderDetails entity:entities) {
-		 if(orderid.equals(entity.getOrderid())) {
+    public String changeOrderStatus(Integer orderid,String status){
+     	String orderstatus=null;
+	    List<OrderDetails> entities=orderRepo.findAll();
+	    for(OrderDetails entity:entities) {
+	    	 if(orderid.equals(entity.getOrderid())) {
 			 entity.setStatus(status);
 			 orderRepo.save(entity);
 			 orderstatus="Status of your order:"+status;
@@ -212,44 +226,65 @@ public String changeOrderStatus(Integer orderid,String status){
 	 orderstatus ="Sorry!!!No such order is present to change the status..Please Confirm Your Order";
 	 return orderstatus;
 }
-public double getOrderAmountUsingBuyerId(int buyerId) throws Exception  {
-	Optional<OrderDetails> optOrder = orderRepo.findByBuyerid(buyerId);
-	double amount = -1.0;
-	if(optOrder.isPresent()) {
-		OrderDetails order = optOrder.get();
-		amount = order.getAmount();
-	}
+    public double getOrderAmountUsingBuyerId(int buyerId) throws Exception  {
+    	Optional<OrderDetails> optOrder = orderRepo.findByBuyerid(buyerId);
+    	double amount = -1.0;
+	    if(optOrder.isPresent()) {
+	    	OrderDetails order = optOrder.get();
+	    	amount = order.getAmount();
+	    }
 	return amount;
 	
 }
-public void changeAmountAccordingToRewardPoints(int buyerId,double amount) {
-	Optional<OrderDetails> optOrder = orderRepo.findByBuyerid(buyerId);
-	if(optOrder.isPresent()) {
-		OrderDetails order = optOrder.get();
-	    order.setAmount(amount);
-	    orderRepo.save(order);
+    public void changeAmountAccordingToRewardPoints(int buyerId,double amount) {
+    	Optional<OrderDetails> optOrder = orderRepo.findByBuyerid(buyerId);
+    	if(optOrder.isPresent()) {
+    		OrderDetails order = optOrder.get();
+			order.setAmount(amount);
+			orderRepo.save(order);
 	}
 
 }
-public boolean checkDeliveryAddress(int buyerId) {
-	Optional<OrderDetails> optOrder = orderRepo.findByBuyerid(buyerId);
-	if(optOrder.isPresent()) {
-		OrderDetails order = optOrder.get();
-	    if(order.getAddress().length()<100) {
-	    	return true;
-	    }
+    	public boolean checkDeliveryAddress(int buyerId) {
+    		Optional<OrderDetails> optOrder = orderRepo.findByBuyerid(buyerId);
+    		if(optOrder.isPresent()) {
+    			OrderDetails order = optOrder.get();
+    			if(order.getAddress().length()<100) {
+    				return true;
+    			}
 	    
-	}
+    		}
 	return false;
 }
-public String cancelOrder(int orderid) {
+     public String cancelOrder(int orderid) {
 	  Optional<OrderDetails> order=orderRepo.findById(orderid);
 	  if(order.isPresent()) {
 		  OrderDetails order1=order.get();
+		  List<ProductsOrdered> po=productRepo.findByorderid(orderid);
+		    for(ProductsOrdered po1:po) {
+		    	productRepo.delete(po1);
+		    }
 	  orderRepo.delete(order1);
 	  return "DELETED Successfully!!!!!";
 	  }
 
-return "Sorry!!Your order cannot be deleted";
+   return "Sorry!!Your order cannot be deleted";
+  }
+
+
+
+
+
+public List<OrderDTO> getAllOrderDetails() {
+
+	List<OrderDetails> orders = orderRepo.findAll();
+	List<OrderDTO> orderDTOs = new ArrayList<>();
+
+	for (OrderDetails order:orders) {
+		OrderDTO orderDTO = OrderDTO.valueOf(order);
+		orderDTOs.add(orderDTO);
+	}
+	logger.info("Order details : {}", orderDTOs);
+	return orderDTOs;
 }
 }

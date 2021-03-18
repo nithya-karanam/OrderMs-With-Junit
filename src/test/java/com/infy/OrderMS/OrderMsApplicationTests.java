@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
@@ -42,14 +43,14 @@ public class OrderMsApplicationTests {
 	}
 @Test
       public void getAllOrderDetails() throws Exception{
- OrderDetails order1=new OrderDetails(1,11,1245.0,LocalDate.parse("2020-01-28"),"HYD","ORDER PLACED");
-   OrderDetails order2=new OrderDetails(2,11,9991.00,LocalDate.parse("2020-02-28"),"Delhi","ORDER PLACED");
-   List<OrderDetails> orders= new ArrayList();
-  orders.add(order1);
-  orders.add(order2);
-  Mockito.when(orderRepo.findAll()).thenReturn(orders);
-  List<OrderDTO> orlist=orderservicemock.getOrderDetails();
-   Assertions.assertEquals(orders.isEmpty(), orlist.isEmpty());
+	OrderDetails order1=new OrderDetails(1,11,1245.0,LocalDate.parse("2020-01-28"),"HYD","ORDER PLACED");
+	OrderDetails order2=new OrderDetails(2,11,9991.00,LocalDate.parse("2020-02-28"),"Delhi","ORDER PLACED");
+	List<OrderDetails> orders= new ArrayList();
+	orders.add(order1);
+	orders.add(order2);
+	Mockito.when(orderRepo.findAll()).thenReturn(orders);
+	List<OrderDTO> orlist=orderservicemock.getAllOrderDetails();
+	Assertions.assertEquals(orders.isEmpty(), orlist.isEmpty());
 	
 }
 
@@ -61,3 +62,5 @@ public class OrderMsApplicationTests {
    }
    
 }
+   
+
